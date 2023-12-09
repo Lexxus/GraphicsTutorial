@@ -9,27 +9,41 @@ FrameBuffer::FrameBuffer(HWND winHandle, HDC deviceContext)
 
     RECT rect = {};
 
-    Assert(GetClientRect(winHandle, &rect))
+    Assert(GetClientRect(winHandle, &rect));
 
     mWidth = rect.right - rect.left;
     mHeight = rect.bottom - rect.top;
+
     mBuffer = new u32[mWidth * mHeight];
 }
 
-void FrameBuffer::Fill(f32 offset = 0.0f)
+FrameBuffer::FrameBuffer(HWND winHandle, HDC deviceContext, u32 width, u32 height)
+{
+    wh = winHandle;
+    dc = deviceContext;
+
+    mWidth = width;
+    mHeight = height;
+
+    mBuffer = new u32[mWidth * mHeight];
+}
+
+void FrameBuffer::Fill(u32 color = 0)
 {
     for (u32 y = 0; y < mHeight; ++y)
         for (u32 x = 0; x < mWidth; ++x)
         {
             u32 i = y * mWidth + x;
-            u8 r = (u8)(x - offset);
-            u8 g = (u8)y;
-            u8 b = 0;
-            u8 alpha = 255;
-            u32 pixel = ((u32)alpha << 24) | ((u32)r << 16) | ((u32)g << 8) | (u32)b;
 
-            mBuffer[i] = pixel;
+            mBuffer[i] = color;
         }
+}
+
+void FrameBuffer::SetPixel(V2 pos, u32 color)
+{
+    u32 i = u32(pos.y) * mWidth + (pos.x);
+
+    mBuffer[i] = color;
 }
 
 void FrameBuffer::Render()
@@ -50,6 +64,16 @@ void FrameBuffer::Render()
     BitmapInfo.bmiHeader.biCompression = BI_RGB;
 
     Assert(StretchDIBits(dc, 0, 0, clientWidth, clientHeight, 0, 0, mWidth, mHeight, mBuffer, &BitmapInfo, DIB_RGB_COLORS, SRCCOPY));
+}
+
+const u32 FrameBuffer::Width() const
+{
+    return mWidth;
+}
+
+const u32 FrameBuffer::Height() const
+{
+    return mHeight;
 }
 
 FrameBuffer::~FrameBuffer()

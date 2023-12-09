@@ -25,6 +25,8 @@ typedef uintptr_t umm;
 
 typedef int32_t b32;
 
+#include "graphics_math.h"
+
 #define global static
 #define local_global static
 
@@ -44,6 +46,8 @@ struct global_state
     HWND windowHandle;
     HDC deviceContext;
 };
+
+constexpr float PI = 3.14159265359f;
 
 #define WIN32_GRAPHICS_H
 #endif

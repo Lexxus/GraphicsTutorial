@@ -1,10 +1,21 @@
+#include <cmath>
 #include <cstddef>
 #include <windows.h>
 
 #include "main.h"
+#include "graphics_math.h"
 #include "FrameBuffer.h"
 
 global global_state GlobalState;
+
+V2 ProjectPoint(V3 &pos, u32 width, u32 height)
+{
+    V2 result = pos.xy / pos.z;
+
+    result = 0.5f * (result + 1.0f) * V2(width, height);
+
+    return result;
+}
 
 ATOM InitApplication(HINSTANCE hInstance, LPCSTR className);
 bool InitInstance(HINSTANCE hInstance, int nShowCmd, LPCSTR className);
@@ -31,12 +42,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     FrameBuffer fb = FrameBuffer(GlobalState.windowHandle, GlobalState.deviceContext);
 
-    const f32 speed = 200.0f;
-    f32 currOffset = 0.0f;
-
     LARGE_INTEGER beginTime = {};
     LARGE_INTEGER endTime = {};
     Assert(QueryPerformanceCounter(&beginTime));
+
+    float currAngle = 0.0f;
+    const float pi2 = PI * 2.0f;
 
     while (GlobalState.isRunning)
     {
@@ -61,10 +72,36 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             }
         }
 
-        currOffset += speed * frameTime;
+        fb.Fill(0xFF000000);
 
-        fb.Fill(currOffset);
+        for (u32 n = 0; n < 10; ++n)
+        {
+            float depth = powf(2, n + 1);
+            V3 points[3] =
+            {
+                V3(-1.0f, -0.5f, depth),
+                V3(1.0f, -0.5f, depth),
+                V3(0.0f, 0.5f, depth)
+            };
+
+            for (u32 i = 0; i < 3; ++i)
+            {
+                V3 transPixel = points[i] + V3(cosf(currAngle), sinf(currAngle), 0);
+                V2 pixelPos = ProjectPoint(transPixel, fb.Width(), fb.Height());
+
+                if (pixelPos.x >= 0 && pixelPos.x < fb.Width() && pixelPos.y >= 0 && pixelPos.y < fb.Height())
+                {
+                    u32 color = 0xFF00FF00;
+                    fb.SetPixel(pixelPos, color);
+                }
+            }
+        }
+
         fb.Render();
+
+        currAngle += frameTime;
+        if (currAngle >= pi2)
+            currAngle -= pi2;
     }
 
     return 0;
