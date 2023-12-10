@@ -82,6 +82,10 @@ void FrameBuffer::DrawTriangle(V3* triPixels, u32 color)
     V2 edge1 = pointC - pointB;
     V2 edge2 = pointA - pointC;
 
+    bool isTopLeft0 = (edge0.x >= 0.0f && edge0.y > 0.0f) || (edge0.x > 0.0f && edge0.y == 0.0f);
+    bool isTopLeft1 = (edge1.x >= 0.0f && edge1.y > 0.0f) || (edge1.x > 0.0f && edge1.y == 0.0f);
+    bool isTopLeft2 = (edge2.x >= 0.0f && edge2.y > 0.0f) || (edge2.x > 0.0f && edge2.y == 0.0f);
+
     for (u32 y = 0; y < mHeight; ++y)
         for (u32 x = 0; x < mWidth; ++x)
             if (GetPixel(x, y) == mBgColor)
@@ -92,8 +96,16 @@ void FrameBuffer::DrawTriangle(V3* triPixels, u32 color)
                 V2 pEdge1 = p - pointB;
                 V2 pEdge2 = p - pointC;
 
-                if (pEdge0.Cross(edge0) >= 0.0f && pEdge1.Cross(edge1) >= 0.0f && pEdge2.Cross(edge2) >= 0.0f)
+                float cross0 = pEdge0.Cross(edge0);
+                float cross1 = pEdge1.Cross(edge1);
+                float cross2 = pEdge2.Cross(edge2);
+
+                if ((cross0 > 0.0f || (isTopLeft0 && cross0 == 0.0f)) &&
+                    (cross1 > 0.0f || (isTopLeft1 && cross1 == 0.0f)) &&
+                    (cross2 > 0.0f || (isTopLeft2 && cross2 == 0.0f)))
+                {
                     SetPixel(x, y, color);
+                }
             }
 }
 
