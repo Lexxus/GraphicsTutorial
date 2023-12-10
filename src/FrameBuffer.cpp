@@ -6,6 +6,7 @@ FrameBuffer::FrameBuffer(HWND winHandle, HDC deviceContext)
 {
     wh = winHandle;
     dc = deviceContext;
+    mBgColor = 0xFF000000;
 
     RECT rect = {};
 
@@ -21,6 +22,7 @@ FrameBuffer::FrameBuffer(HWND winHandle, HDC deviceContext, u32 width, u32 heigh
 {
     wh = winHandle;
     dc = deviceContext;
+    mBgColor = 0xFF000000;
 
     mWidth = width;
     mHeight = height;
@@ -30,13 +32,37 @@ FrameBuffer::FrameBuffer(HWND winHandle, HDC deviceContext, u32 width, u32 heigh
 
 void FrameBuffer::Fill(u32 color = 0)
 {
+    if (color != 0)
+        mBgColor = color;
+
     for (u32 y = 0; y < mHeight; ++y)
         for (u32 x = 0; x < mWidth; ++x)
         {
-            u32 i = y * mWidth + x;
-
-            mBuffer[i] = color;
+            SetPixel(x, y, color);
         }
+}
+
+V2 FrameBuffer::ProjectPoint(V3 &point)
+{
+    V2 result = point.xy / point.z;
+
+    result = 0.5f * (result + 1.0f) * V2(mWidth, mHeight);
+
+    return result;
+}
+
+u32 FrameBuffer::GetPixel(u32 x, u32 y)
+{
+    u32 i = y * mWidth + x;
+
+    return mBuffer[i];
+}
+
+void FrameBuffer::SetPixel(u32 x, u32 y, u32 color)
+{
+    u32 i = y * mWidth + x;
+
+    mBuffer[i] = color;
 }
 
 void FrameBuffer::SetPixel(V2 pos, u32 color)
@@ -44,6 +70,31 @@ void FrameBuffer::SetPixel(V2 pos, u32 color)
     u32 i = u32(pos.y) * mWidth + (pos.x);
 
     mBuffer[i] = color;
+}
+
+void FrameBuffer::DrawTriangle(V3* triPixels, u32 color)
+{
+    V2 pointA = ProjectPoint(triPixels[0]);
+    V2 pointB = ProjectPoint(triPixels[1]);
+    V2 pointC = ProjectPoint(triPixels[2]);
+
+    V2 edge0 = pointB - pointA;
+    V2 edge1 = pointC - pointB;
+    V2 edge2 = pointA - pointC;
+
+    for (u32 y = 0; y < mHeight; ++y)
+        for (u32 x = 0; x < mWidth; ++x)
+            if (GetPixel(x, y) == mBgColor)
+            {
+                V2 p = V2(x, y) + 0.5f;
+
+                V2 pEdge0 = p - pointA;
+                V2 pEdge1 = p - pointB;
+                V2 pEdge2 = p - pointC;
+
+                if (pEdge0.Cross(edge0) >= 0.0f && pEdge1.Cross(edge1) >= 0.0f && pEdge2.Cross(edge2) >= 0.0f)
+                    SetPixel(x, y, color);
+            }
 }
 
 void FrameBuffer::Render()

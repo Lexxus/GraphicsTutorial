@@ -8,15 +8,6 @@
 
 global global_state GlobalState;
 
-V2 ProjectPoint(V3 &pos, u32 width, u32 height)
-{
-    V2 result = pos.xy / pos.z;
-
-    result = 0.5f * (result + 1.0f) * V2(width, height);
-
-    return result;
-}
-
 ATOM InitApplication(HINSTANCE hInstance, LPCSTR className);
 bool InitInstance(HINSTANCE hInstance, int nShowCmd, LPCSTR className);
 LRESULT WindowCallBack(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam);
@@ -73,28 +64,23 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 
         fb.Fill(0xFF000000);
+        V3 shift = V3(cosf(currAngle), sinf(currAngle), 0);
 
-        for (u32 n = 0; n < 10; ++n)
+        for (u32 n = 0; n < 5; ++n)
         {
             float depth = powf(2, n + 1);
             V3 points[3] =
             {
                 V3(-1.0f, -0.5f, depth),
-                V3(1.0f, -0.5f, depth),
-                V3(0.0f, 0.5f, depth)
+                V3(0.0f, 0.5f, depth),
+                V3(1.0f, -0.5f, depth)
             };
 
             for (u32 i = 0; i < 3; ++i)
             {
-                V3 transPixel = points[i] + V3(cosf(currAngle), sinf(currAngle), 0);
-                V2 pixelPos = ProjectPoint(transPixel, fb.Width(), fb.Height());
-
-                if (pixelPos.x >= 0 && pixelPos.x < fb.Width() && pixelPos.y >= 0 && pixelPos.y < fb.Height())
-                {
-                    u32 color = 0xFF00FF00;
-                    fb.SetPixel(pixelPos, color);
-                }
+                points[i] += shift;
             }
+            fb.DrawTriangle(points, 0xFF0000FF << (n * 4));
         }
 
         fb.Render();
@@ -126,7 +112,7 @@ bool InitInstance(HINSTANCE hInstance, int nShowCmd, LPCSTR className)
         0,  // DWORD dwExStyle,
         className,  // LPCSTR lpClassName,
         "Graphics Tutorial",  // LPCSTR lpWindowName,
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE, // DWORD dwStyle,
+        WS_OVERLAPPEDWINDOW, // | WS_VISIBLE, // DWORD dwStyle,
         CW_USEDEFAULT,  // int X,
         CW_USEDEFAULT, // int Y,
         1240, // int nWidth,
@@ -140,8 +126,8 @@ bool InitInstance(HINSTANCE hInstance, int nShowCmd, LPCSTR className)
     if (!GlobalState.windowHandle)
         return FALSE;
 
-    // ShowWindow(GlobalState.windowHandle, nShowCmd);
-    // UpdateWindow(GlobalState.windowHandle);
+    ShowWindow(GlobalState.windowHandle, nShowCmd);
+    UpdateWindow(GlobalState.windowHandle);
 
     GlobalState.deviceContext = GetDC(GlobalState.windowHandle);
 

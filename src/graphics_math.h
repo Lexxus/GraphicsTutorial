@@ -14,11 +14,17 @@ public:
     V2 operator+=(V2);
     V2 operator+(float);
     V2 operator+=(float);
+    V2 operator-(V2);
+    V2 operator-=(V2);
+    V2 operator-(float);
+    V2 operator-=(float);
     V2 operator*(V2);
     V2 operator*=(V2);
     V2 operator*(float);
     V2 operator*=(float);
     V2 operator/(float);
+
+    float Cross(V2);
 
     union
     {
@@ -41,7 +47,9 @@ public:
     V3() :x{ 0 }, y{ 0 }, z{ 0 } {}
     V3(float x, float y, float z) :x{x}, y{y}, z{z} {}
 
+    V3 operator=(V3);
     V3 operator+(V3);
+    V3 operator+=(V3);
 
     union
     {
