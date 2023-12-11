@@ -1,3 +1,4 @@
+#include <cmath>
 #include <windows.h>
 #include "main.h"
 #include "FrameBuffer.h"
@@ -72,11 +73,16 @@ void FrameBuffer::SetPixel(V2 pos, u32 color)
     mBuffer[i] = color;
 }
 
-void FrameBuffer::DrawTriangle(V3* triPixels, u32 color)
+void FrameBuffer::DrawTriangle(V3* triPixels, V3* colors)
 {
     V2 pointA = ProjectPoint(triPixels[0]);
     V2 pointB = ProjectPoint(triPixels[1]);
     V2 pointC = ProjectPoint(triPixels[2]);
+
+    u32 minX = (u32)min(max(min(min(pointA.x, pointB.x), pointC.x), 0), mWidth - 1);
+    u32 minY = (u32)min(max(min(min(pointA.y, pointB.y), pointC.y), 0), mHeight - 1);
+    u32 maxX = (u32)max(min(round(max(max(pointA.x, pointB.x), pointC.x)), mWidth - 1), 0);
+    u32 maxY = (u32)max(min(round(max(max(pointA.y, pointB.y), pointC.y)), mHeight - 1), 0);
 
     V2 edge0 = pointB - pointA;
     V2 edge1 = pointC - pointB;
@@ -86,8 +92,11 @@ void FrameBuffer::DrawTriangle(V3* triPixels, u32 color)
     bool isTopLeft1 = (edge1.x >= 0.0f && edge1.y > 0.0f) || (edge1.x > 0.0f && edge1.y == 0.0f);
     bool isTopLeft2 = (edge2.x >= 0.0f && edge2.y > 0.0f) || (edge2.x > 0.0f && edge2.y == 0.0f);
 
-    for (u32 y = 0; y < mHeight; ++y)
-        for (u32 x = 0; x < mWidth; ++x)
+    float baryCentricDiv = edge0.Cross(pointC - pointA);
+    u32 alpha = 0xFF << 24;
+
+    for (u32 y = minY; y < maxY; ++y)
+        for (u32 x = minX; x < maxX; ++x)
             if (GetPixel(x, y) == mBgColor)
             {
                 V2 p = V2(x, y) + 0.5f;
@@ -104,6 +113,12 @@ void FrameBuffer::DrawTriangle(V3* triPixels, u32 color)
                     (cross1 > 0.0f || (isTopLeft1 && cross1 == 0.0f)) &&
                     (cross2 > 0.0f || (isTopLeft2 && cross2 == 0.0f)))
                 {
+                    float t0 = -cross1 / baryCentricDiv;
+                    float t1 = -cross2 / baryCentricDiv;
+                    float t2 = -cross0 / baryCentricDiv;
+                    V3 color3d = (t0 * colors[0] + t1 * colors[1] + t2 * colors[2]) * 255.0f;
+                    u32 color = alpha | ((u32)color3d.r << 16) | ((u32)color3d.g << 8) | (u32)color3d.b;
+
                     SetPixel(x, y, color);
                 }
             }

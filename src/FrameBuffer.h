@@ -13,7 +13,7 @@ public:
     inline u32 GetPixel(u32 x, u32 y);
     inline void SetPixel(u32 x, u32 y, u32 color);
     inline void SetPixel(V2 pos, u32 color);
-    void DrawTriangle(V3* triPoints, u32 color);
+    void DrawTriangle(V3* triPoints, V3* colors);
     void Render();
 
 private:

@@ -116,19 +116,26 @@ V2 V2::operator*=(float n)
     return *this;
 }
 
+V2 V2::operator/(float n)
+{
+    V2 result(x, y);
+
+    result /= n;
+
+    return result;
+}
+
+V2 V2::operator/=(float n)
+{
+    x /= n;
+    y /= n;
+
+    return *this;
+}
+
 V2 operator*(float n, V2 a)
 {
     return a * n;
-}
-
-V2 V2::operator/(float n)
-{
-    V2 result;
-
-    result.x = x / n;
-    result.y = y / n;
-
-    return result;
 }
 
 float V2::Cross(V2 b)
@@ -165,4 +172,27 @@ V3 V3::operator+=(V3 a)
     z += a.z;
 
     return *this;
+}
+
+V3 V3::operator*(float a)
+{
+    V3 result(x, y, z);
+
+    result *= a;
+
+    return result;
+}
+
+V3 V3::operator*=(float a)
+{
+    x *= a;
+    y *= a;
+    z *= a;
+
+    return *this;
+}
+
+V3 operator*(float n, V3 a)
+{
+    return a * n;
 }

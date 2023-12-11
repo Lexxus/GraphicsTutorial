@@ -64,6 +64,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 
         fb.Fill(0xFF000000);
+
+        V3 colors[] =
+        {
+            V3(1, 0, 0),
+            V3(0, 1, 0),
+            V3(0, 0, 1)
+        };
         V3 shift = V3(cosf(currAngle), sinf(currAngle), 0);
 
         for (u32 n = 0; n < 5; ++n)
@@ -71,16 +78,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             float depth = powf(2, n + 1);
             V3 points[3] =
             {
-                V3(-1.0f, -0.5f, depth),
+                V3(-1.5f, -0.5f, depth),
                 V3(0.0f, 0.5f, depth),
-                V3(1.0f, -0.5f, depth)
+                V3(1.8f, -0.5f, depth)
             };
 
             for (u32 i = 0; i < 3; ++i)
             {
                 points[i] += shift;
             }
-            fb.DrawTriangle(points, 0xFF0000FF << (n * 4));
+            fb.DrawTriangle(points, colors);
         }
 
         fb.Render();

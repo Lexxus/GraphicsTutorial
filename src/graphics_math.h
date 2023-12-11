@@ -23,6 +23,7 @@ public:
     V2 operator*(float);
     V2 operator*=(float);
     V2 operator/(float);
+    V2 operator/=(float);
 
     float Cross(V2);
 
@@ -50,6 +51,8 @@ public:
     V3 operator=(V3);
     V3 operator+(V3);
     V3 operator+=(V3);
+    V3 operator*(float);
+    V3 operator*=(float);
 
     union
     {
@@ -66,9 +69,18 @@ public:
             float _ignored;
         };
 
+        struct
+        {
+            float r;
+            float g;
+            float b;
+        };
+
         float e[3];
     };
 };
+
+V3 operator*(float, V3);
 
 #define GRAPHICS_MATH_H
 #endif
