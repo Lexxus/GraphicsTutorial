@@ -63,14 +63,55 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             }
         }
 
+        // clear the canvas
         fb.Fill(0xFF000000);
 
+        V3 triangle1[] =
+        {
+            V3(-0.5f, -0.5f, 1.5f),
+            V3(0.0f, 0.5f, 1.5f),
+            V3(0.5f, -0.5f, 1.5f)
+        };
+        V3 colors1[] =
+        {
+            V3(1, 0, 0),
+            V3(1, 0, 0),
+            V3(0, 1, 0)
+        };
+
+        V3 triangle2[] =
+        {
+            V3(-0.3f, -0.5f, 1.7f),
+            V3(0.0f, 0.5f, 1.5f),
+            V3(0.3f, -0.5f, 1.3f)
+        };
+        V3 colors2[] =
+        {
+            V3(0, 0, 1),
+            V3(1, 0, 1),
+            V3(0, 1, 1)
+        };
+
+        V3 triangle3[] =
+        {
+            V3(0.0f, -0.5f, 1.0f),
+            V3(-1.5f, 0.5f, 3.0f),
+            V3(1.5f, 0.5f, 3.0f)
+        };
+
+        fb.DrawTriangle(triangle1, colors1);
+        fb.DrawTriangle(triangle2, colors2);
+        fb.DrawTriangle(triangle3, colors2);
+
+#if 0
+        // colors at the corners of triangles
         V3 colors[] =
         {
             V3(1, 0, 0),
             V3(0, 1, 0),
             V3(0, 0, 1)
         };
+        // move triangles every frame
         V3 shift = V3(cosf(currAngle), sinf(currAngle), 0);
 
         for (u32 n = 0; n < 5; ++n)
@@ -89,6 +130,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             }
             fb.DrawTriangle(points, colors);
         }
+#endif
 
         fb.Render();
 
