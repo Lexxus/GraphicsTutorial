@@ -14,7 +14,8 @@ public:
     inline void SetPixel(u32 x, u32 y, u32 color);
     inline void SetPixel(V2 pos, u32 color);
     inline float GetDepth(u32 x, u32 y);
-    void DrawTriangle(V3* triPoints, V3* colors);
+    void DrawTriangle(V3 &vertex0, V3 &vertex1, V3 &vertex2,
+        V3 &color0, V3 &color1, V3 &color2, M4 &transform);
     void Render();
 
 private:

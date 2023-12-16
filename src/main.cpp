@@ -66,42 +66,67 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         // clear the canvas
         fb.Fill(0xFF000000);
 
-        V3 triangle1[] =
+        // Cube model
+        V3 modelVertices[] =
         {
-            V3(-0.5f, -0.5f, 1.5f),
-            V3(0.0f, 0.5f, 1.5f),
-            V3(0.5f, -0.5f, 1.5f)
+            // front face
+            V3(-0.5f, -0.5f, -0.5f),
+            V3(-0.5f, 0.5f, -0.5f),
+            V3(0.5f, 0.5f, -0.5f),
+            V3(0.5f, -0.5f, -0.5f),
+            // back face
+            V3(-0.5f, -0.5f, 0.5f),
+            V3(-0.5f, 0.5f, 0.5f),
+            V3(0.5f, 0.5f, 0.5f),
+            V3(0.5f, -0.5f, 0.5f),
         };
-        V3 colors1[] =
+        V3 modelColors[] =
         {
             V3(1, 0, 0),
-            V3(1, 0, 0),
-            V3(0, 1, 0)
-        };
+            V3(1, 1, 0),
+            V3(1, 1, 0),
+            V3(0, 1, 0),
 
-        V3 triangle2[] =
-        {
-            V3(-0.3f, -0.5f, 1.7f),
-            V3(0.0f, 0.5f, 1.5f),
-            V3(0.3f, -0.5f, 1.3f)
-        };
-        V3 colors2[] =
-        {
             V3(0, 0, 1),
+            V3(0, 1, 1),
+            V3(0, 1, 1),
             V3(1, 0, 1),
-            V3(0, 1, 1)
         };
-
-        V3 triangle3[] =
+        u32 modelIndices[] =
         {
-            V3(0.0f, -0.5f, 1.0f),
-            V3(-1.5f, 0.5f, 3.0f),
-            V3(1.5f, 0.5f, 3.0f)
+            // front face
+            0, 1, 2,
+            2, 3, 0,
+            // back face
+            6, 5, 4,
+            4, 7, 6,
+            // left face
+            4, 5, 1,
+            1, 0, 4,
+            // right face
+            3, 2, 6,
+            6, 7, 3,
+            // top face
+            1, 5, 6,
+            6, 2, 1,
+            // bottom face
+            4, 0, 3,
+            3, 7, 4,
         };
 
-        fb.DrawTriangle(triangle1, colors1);
-        fb.DrawTriangle(triangle2, colors2);
-        fb.DrawTriangle(triangle3, colors2);
+        //float offset = abs(sinf(currAngle));
+        M4 transform = M4(V3(0, 0, 2.0f))
+            * M4(1.0f, 1.0f, 1.0f).Rotate(currAngle, 0.0f, currAngle)
+            * M4(1.0f, 1.0f, 1.0f);
+
+        for (int i = 0; i < 36; i += 3)
+        {
+            u32 index0 = modelIndices[i];
+            u32 index1 = modelIndices[i + 1];
+            u32 index2 = modelIndices[i + 2];
+            fb.DrawTriangle(modelVertices[index0], modelVertices[index1], modelVertices[index2],
+                modelColors[index0], modelColors[index1], modelColors[index2], transform);
+        }
 
 #if 0
         // colors at the corners of triangles

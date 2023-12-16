@@ -82,5 +82,82 @@ public:
 
 V3 operator*(float, V3);
 
+
+class V4
+{
+public:
+    V4() :x{ 0 }, y{ 0 }, z{ 0 }, w{ 0 } {}
+    V4(float x, float y, float z, float w) :x{ x }, y{ y }, z{ z }, w{ w } {}
+    V4(V3);
+
+    V4 operator=(V4);
+    V4 operator+(V4);
+    V4 operator+=(V4);
+    V4 operator*(V4);
+    V4 operator*=(V4);
+    V4 operator*(float);
+    V4 operator*=(float);
+
+    union
+    {
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        struct
+        {
+            V3 xyz;
+            float _ignored;
+        };
+
+        struct
+        {
+            V2 xy;
+            V2 x2y2;
+        };
+
+        struct
+        {
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+
+        float e[4];
+    };
+};
+
+
+class M4
+{
+public:
+    M4() {};
+    // set all elements to a value
+    M4(float);
+    M4(V4*);
+    // set Translation matrix
+    M4(V3);
+    // set Scale matrix
+    M4(float x, float y, float z);
+
+    void Clear(float val = 0.0f);
+    M4 Rotate(float x, float y, float z);
+
+    M4 operator*(M4);
+    M4 operator*=(M4);
+    V4 operator*(V4);
+
+    union
+    {
+        V4 v[4];
+        float e[16];
+    };
+};
+
 #define GRAPHICS_MATH_H
 #endif

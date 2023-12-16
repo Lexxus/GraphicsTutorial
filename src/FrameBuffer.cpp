@@ -79,12 +79,17 @@ float FrameBuffer::GetDepth(u32 x, u32 y)
     return mDepthBuffer[i];
 }
 
-void FrameBuffer::DrawTriangle(V3* triPixels, V3* colors)
+void FrameBuffer::DrawTriangle(V3 &vertex0, V3 &vertex1, V3 &vertex2,
+    V3 &color0, V3 &color1, V3 &color2, M4 &transform)
 {
+    V3 transformedPoint0 = (transform * V4(vertex0)).xyz;
+    V3 transformedPoint1 = (transform * V4(vertex1)).xyz;
+    V3 transformedPoint2 = (transform * V4(vertex2)).xyz;
+
     // pojecting 3D points of triangle's corners into 2D points
-    V2 pointA = ProjectPoint(triPixels[0]);
-    V2 pointB = ProjectPoint(triPixels[1]);
-    V2 pointC = ProjectPoint(triPixels[2]);
+    V2 pointA = ProjectPoint(transformedPoint0);
+    V2 pointB = ProjectPoint(transformedPoint1);
+    V2 pointC = ProjectPoint(transformedPoint2);
 
     // calculating min/max 2D coordnates of the triangle points
     u32 minX = (u32)min(max(min(min(pointA.x, pointB.x), pointC.x), 0), mWidth - 1);
@@ -130,14 +135,14 @@ void FrameBuffer::DrawTriangle(V3* triPixels, V3* colors)
                 float t2 = -cross0 / baryCentricDiv;
 
                 // perspective z-interpolation
-                float depth = 1.0f / (t0 / triPixels[0].z + t1 / triPixels[1].z + t2 / triPixels[2].z);
+                float depth = 1.0f / (t0 / transformedPoint0.z + t1 / transformedPoint1.z + t2 / transformedPoint2.z);
 
                 u32 i = y * mWidth + x;
 
                 if (depth < mDepthBuffer[i])
                 {
                     // get interpolated color based on the colors at the triangle's corners
-                    V3 color3d = (t0 * colors[0] + t1 * colors[1] + t2 * colors[2]) * 255.0f;
+                    V3 color3d = (t0 * color0 + t1 * color1 + t2 * color2) * 255.0f;
                     u32 color = alpha | ((u32)color3d.r << 16) | ((u32)color3d.g << 8) | (u32)color3d.b;
 
                     mBuffer[i] = color;
