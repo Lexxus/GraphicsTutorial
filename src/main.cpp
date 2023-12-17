@@ -40,13 +40,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     float currAngle = 0.0f;
     const float pi2 = PI * 2.0f;
 
+    bool isW = false;
+    bool isA = false;
+    bool isS = false;
+    bool isD = false;
+    MSG msg = {};
+
     while (GlobalState.isRunning)
     {
         Assert(QueryPerformanceCounter(&endTime));
         f32 frameTime = f32(endTime.QuadPart - beginTime.QuadPart) / f32(timerFrequency.QuadPart);
         beginTime = endTime;
-
-        MSG msg = {};
 
         while (PeekMessageA(&msg, GlobalState.windowHandle, 0, 0, PM_REMOVE))
         {
@@ -56,11 +60,109 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                     GlobalState.isRunning = FALSE;
                 break;
 
+                case WM_KEYUP:
+                case WM_KEYDOWN:
+                {
+                    u32 vCode = msg.wParam;
+                    bool isDown = !((msg.lParam >> 31) & 0x1);
+
+                    switch (vCode)
+                    {
+                        case 'W':
+                            isW = isDown;
+                            break;
+                        case 'A':
+                            isA = isDown;
+                            break;
+                        case 'S':
+                            isS = isDown;
+                            break;
+                        case 'D':
+                            isD = isDown;
+                            break;
+                    }
+                } break;
+
                 default:
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 break;
             }
+        }
+
+        // calculate the camera
+        M4 cameraTransform = M4::Identity();
+        {
+            Camera* camera = &GlobalState.camera;
+            bool mouseDown = false;
+            V2 mousePos = {};
+            if (GetActiveWindow() == GlobalState.windowHandle)
+            {
+                POINT winMousePos = {};
+                Assert(GetCursorPos(&winMousePos));
+                Assert(ScreenToClient(GlobalState.windowHandle, &winMousePos));
+
+                RECT clientRect = {};
+                Assert(GetClientRect(GlobalState.windowHandle, &clientRect));
+                winMousePos.y = clientRect.bottom - winMousePos.y;
+                mousePos.x = float(winMousePos.x) / float(clientRect.right - clientRect.left);
+                mousePos.y = float(winMousePos.y) / float(clientRect.bottom - clientRect.top);
+
+                mouseDown = (GetKeyState(VK_LBUTTON) & 0x80) != 0;
+            }
+
+            if (mouseDown)
+            {
+                if (!camera->prevMouseDown)
+                {
+                    camera->prevMousePos = mousePos;
+                }
+                V2 mouseDelta = mousePos - camera->prevMousePos;
+                camera->pitch += mouseDelta.y;
+                camera->yaw += mouseDelta.x;
+
+                camera->prevMousePos = mousePos;
+            }
+            camera->prevMouseDown = mouseDown;
+
+            M4 cameraAxisTransform = M4::Identity().Rotate(0, camera->yaw, 0) * M4::Identity().Rotate(camera->pitch, 0, 0);
+
+            V3 forward = (cameraAxisTransform * V4(0, 0, 1, 0)).xyz.Normalize();
+            V3 up = (cameraAxisTransform * V4(0, 1, 0, 0)).xyz.Normalize();
+            V3 right = (cameraAxisTransform * V4(1, 0, 0, 0)).xyz.Normalize();
+
+            M4 cameraViewTransform = M4::Identity();
+
+            cameraViewTransform.v[0].x = right.x;
+            cameraViewTransform.v[1].x = right.y;
+            cameraViewTransform.v[2].x = right.z;
+
+            cameraViewTransform.v[0].y = up.x;
+            cameraViewTransform.v[1].y = up.y;
+            cameraViewTransform.v[2].y = up.z;
+
+            cameraViewTransform.v[0].z = forward.x;
+            cameraViewTransform.v[1].z = forward.y;
+            cameraViewTransform.v[2].z = forward.z;
+
+            if (isW)
+            {
+                camera->pos += forward * frameTime;
+            }
+            if (isS)
+            {
+                camera->pos -= forward * frameTime;
+            }
+            if (isA)
+            {
+                camera->pos -= right * frameTime;
+            }
+            if (isD)
+            {
+                camera->pos += right * frameTime;
+            }
+
+            cameraTransform = cameraViewTransform * cameraTransform.SetTranslation(-camera->pos);
         }
 
         // clear the canvas
@@ -115,9 +217,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         };
 
         //float offset = abs(sinf(currAngle));
-        M4 transform = M4(V3(0, 0, 2.0f))
-            * M4(1.0f, 1.0f, 1.0f).Rotate(currAngle, 0.0f, currAngle)
-            * M4(1.0f, 1.0f, 1.0f);
+        M4 transform = cameraTransform
+            * M4(V3(0, 0, 2.0f))
+            * M4::Identity().Rotate(currAngle, 0.0f, currAngle);
 
         for (int i = 0; i < 36; i += 3)
         {
@@ -204,6 +306,7 @@ bool InitInstance(HINSTANCE hInstance, int nShowCmd, LPCSTR className)
     UpdateWindow(GlobalState.windowHandle);
 
     GlobalState.deviceContext = GetDC(GlobalState.windowHandle);
+    GlobalState.camera = {};
 
     return TRUE;
 }

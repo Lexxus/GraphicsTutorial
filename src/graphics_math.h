@@ -49,10 +49,17 @@ public:
     V3(float x, float y, float z) :x{x}, y{y}, z{z} {}
 
     V3 operator=(V3);
+    V3 operator-();
     V3 operator+(V3);
     V3 operator+=(V3);
+    V3 operator-(V3);
+    V3 operator-=(V3);
     V3 operator*(float);
     V3 operator*=(float);
+    V3 operator/(float);
+    V3 operator/=(float);
+
+    V3 Normalize();
 
     union
     {
@@ -139,15 +146,19 @@ public:
     M4() {};
     // set all elements to a value
     M4(float);
-    M4(V4*);
+    M4(V4 a[4]);
     // set Translation matrix
     M4(V3);
     // set Scale matrix
     M4(float x, float y, float z);
 
+    static M4 Identity();
+
     void Clear(float val = 0.0f);
+    M4 SetTranslation(V3);
     M4 Rotate(float x, float y, float z);
 
+    M4 operator=(M4);
     M4 operator*(M4);
     M4 operator*=(M4);
     V4 operator*(V4);

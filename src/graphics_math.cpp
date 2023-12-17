@@ -147,6 +147,13 @@ float V2::Cross(V2 b)
 // NOTE: V3
 //
 
+V3 V3::Normalize()
+{
+    *this /= sqrtf(x * x + y * y + z * z);
+
+    return *this;
+}
+
 V3 V3::operator=(V3 a)
 {
     x = a.x;
@@ -154,6 +161,13 @@ V3 V3::operator=(V3 a)
     z = a.z;
 
     return *this;
+}
+
+V3 V3::operator-()
+{
+    V3 result(-x, -y, -z);
+
+    return result;
 }
 
 V3 V3::operator+(V3 a)
@@ -170,6 +184,24 @@ V3 V3::operator+=(V3 a)
     x += a.x;
     y += a.y;
     z += a.z;
+
+    return *this;
+}
+
+V3 V3::operator-(V3 a)
+{
+    V3 result(x, y, z);
+
+    result -= a;
+
+    return result;
+}
+
+V3 V3::operator-=(V3 a)
+{
+    x -= a.x;
+    y -= a.y;
+    z -= a.z;
 
     return *this;
 }
@@ -191,6 +223,25 @@ V3 V3::operator*=(float a)
 
     return *this;
 }
+
+V3 V3::operator/(float a)
+{
+    V3 result(x, y, z);
+
+    result /= a;
+
+    return result;
+}
+
+V3 V3::operator/=(float a)
+{
+    x /= a;
+    y /= a;
+    z /= a;
+
+    return *this;
+}
+
 
 V3 operator*(float n, V3 a)
 {
@@ -310,6 +361,18 @@ M4::M4(float x, float y, float z)
     v[3].w = 1.0f;
 }
 
+M4 M4::Identity()
+{
+    return M4(1.0f, 1.0f, 1.0f);
+}
+
+
+M4 M4::SetTranslation(V3 a)
+{
+    v[3].xyz = a;
+
+    return *this;
+}
 
 M4 M4::Rotate(float x, float y, float z)
 {
@@ -350,6 +413,14 @@ M4 M4::Rotate(float x, float y, float z)
     return *this;
 }
 
+
+M4 M4::operator=(M4 a)
+{
+    for (int i = 0; i < 16; ++i)
+        e[i] = a.e[i];
+
+    return *this;
+}
 
 M4 M4::operator*(M4 m)
 {
