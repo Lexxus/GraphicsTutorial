@@ -1,5 +1,4 @@
-#include <cmath>
-#include <windows.h>
+#include "pch.h"
 #include "main.h"
 #include "FrameBuffer.h"
 

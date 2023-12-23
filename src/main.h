@@ -40,23 +40,11 @@ typedef int32_t b32;
 #define GigaBytes(Val) (MegaBytes(Val)*1024LL)
 #define TeraBytes(Val) (GigaBytes(Val)*1024LL)
 
-struct Camera
-{
-    bool prevMouseDown;
-    V2 prevMousePos;
-
-    float yaw;
-    float pitch;
-
-    V3 pos;
-};
-
 struct global_state
 {
     bool isRunning;
     HWND windowHandle;
     HDC deviceContext;
-    Camera camera;
 };
 constexpr float PI = 3.14159265359f;
 

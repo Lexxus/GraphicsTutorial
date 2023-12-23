@@ -1,10 +1,10 @@
-#include <cmath>
-#include <cstddef>
-#include <windows.h>
+//#include <cstddef>
+#include "pch.h"
 
 #include "main.h"
 #include "graphics_math.h"
 #include "FrameBuffer.h"
+#include "Camera.h"
 
 global global_state GlobalState;
 
@@ -32,6 +32,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     }
 
     FrameBuffer fb = FrameBuffer(GlobalState.windowHandle, GlobalState.deviceContext);
+    Camera camera = {};
 
     LARGE_INTEGER beginTime = {};
     LARGE_INTEGER endTime = {};
@@ -40,16 +41,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     float currAngle = 0.0f;
     const float pi2 = PI * 2.0f;
 
-    bool isW = false;
-    bool isA = false;
-    bool isS = false;
-    bool isD = false;
     MSG msg = {};
 
     while (GlobalState.isRunning)
     {
         Assert(QueryPerformanceCounter(&endTime));
-        f32 frameTime = f32(endTime.QuadPart - beginTime.QuadPart) / f32(timerFrequency.QuadPart);
+        float frameTime = float(endTime.QuadPart - beginTime.QuadPart) / float(timerFrequency.QuadPart);
         beginTime = endTime;
 
         while (PeekMessageA(&msg, GlobalState.windowHandle, 0, 0, PM_REMOVE))
@@ -69,16 +66,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                     switch (vCode)
                     {
                         case 'W':
-                            isW = isDown;
+                            camera.isMoveForward = isDown;
                             break;
                         case 'A':
-                            isA = isDown;
+                            camera.isMoveLeft = isDown;
                             break;
                         case 'S':
-                            isS = isDown;
+                            camera.isMoveBackward = isDown;
                             break;
                         case 'D':
-                            isD = isDown;
+                            camera.isMoveRight = isDown;
                             break;
                     }
                 } break;
@@ -91,9 +88,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 
         // calculate the camera
-        M4 cameraTransform = M4::Identity();
         {
-            Camera* camera = &GlobalState.camera;
             bool mouseDown = false;
             V2 mousePos = {};
             if (GetActiveWindow() == GlobalState.windowHandle)
@@ -111,59 +106,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                 mouseDown = (GetKeyState(VK_LBUTTON) & 0x80) != 0;
             }
 
-            if (mouseDown)
-            {
-                if (!camera->prevMouseDown)
-                {
-                    camera->prevMousePos = mousePos;
-                }
-                V2 mouseDelta = mousePos - camera->prevMousePos;
-                camera->pitch += mouseDelta.y;
-                camera->yaw += mouseDelta.x;
-
-                camera->prevMousePos = mousePos;
-            }
-            camera->prevMouseDown = mouseDown;
-
-            M4 cameraAxisTransform = M4::Identity().Rotate(0, camera->yaw, 0) * M4::Identity().Rotate(camera->pitch, 0, 0);
-
-            V3 forward = (cameraAxisTransform * V4(0, 0, 1, 0)).xyz.Normalize();
-            V3 up = (cameraAxisTransform * V4(0, 1, 0, 0)).xyz.Normalize();
-            V3 right = (cameraAxisTransform * V4(1, 0, 0, 0)).xyz.Normalize();
-
-            M4 cameraViewTransform = M4::Identity();
-
-            cameraViewTransform.v[0].x = right.x;
-            cameraViewTransform.v[1].x = right.y;
-            cameraViewTransform.v[2].x = right.z;
-
-            cameraViewTransform.v[0].y = up.x;
-            cameraViewTransform.v[1].y = up.y;
-            cameraViewTransform.v[2].y = up.z;
-
-            cameraViewTransform.v[0].z = forward.x;
-            cameraViewTransform.v[1].z = forward.y;
-            cameraViewTransform.v[2].z = forward.z;
-
-            if (isW)
-            {
-                camera->pos += forward * frameTime;
-            }
-            if (isS)
-            {
-                camera->pos -= forward * frameTime;
-            }
-            if (isA)
-            {
-                camera->pos -= right * frameTime;
-            }
-            if (isD)
-            {
-                camera->pos += right * frameTime;
-            }
-
-            cameraTransform = cameraViewTransform * cameraTransform.SetTranslation(-camera->pos);
+            camera.HandleMouse(mousePos, mouseDown);
         }
+        M4 cameraTransform = camera.Move(frameTime);
 
         // clear the canvas
         fb.Fill(0xFF000000);
@@ -306,7 +251,6 @@ bool InitInstance(HINSTANCE hInstance, int nShowCmd, LPCSTR className)
     UpdateWindow(GlobalState.windowHandle);
 
     GlobalState.deviceContext = GetDC(GlobalState.windowHandle);
-    GlobalState.camera = {};
 
     return TRUE;
 }
