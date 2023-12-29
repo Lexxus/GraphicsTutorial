@@ -153,6 +153,8 @@ public:
     M4(float x, float y, float z);
 
     static M4 Identity();
+    // fov as degree
+    static M4 Perspective(float fov, float aspectRatio, float nearZ, float farZ);
 
     void Clear(float val = 0.0f);
     M4 SetTranslation(V3);

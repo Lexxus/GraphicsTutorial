@@ -9,14 +9,14 @@ public:
     const u32 Width() const;
     const u32 Height() const;
     void Fill(u32 color);
-    V2 ProjectPoint(V3 &point);
+    V2 NdcToPixels(V2 &ndcPos);
     inline u32 GetPixel(u32 x, u32 y);
     inline void SetPixel(u32 x, u32 y, u32 color);
     inline void SetPixel(V2 pos, u32 color);
     inline float GetDepth(u32 x, u32 y);
     void DrawTriangle(V3 &vertex0, V3 &vertex1, V3 &vertex2,
         V3 &color0, V3 &color1, V3 &color2, M4 &transform);
-    void Render();
+    void Render(u32 width = 0, u32 height = 0);
 
 private:
     HWND wh;

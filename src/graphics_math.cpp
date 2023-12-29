@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "main.h"
 #include "graphics_math.h"
 
 //
@@ -382,7 +383,7 @@ M4 M4::Rotate(float x, float y, float z)
     float sinY = sinf(y);
     float cosZ = cosf(z);
     float sinZ = sinf(z);
-    M4 m = { 1.0f, 1.0f, 1.0f };
+    M4 m = M4::Identity();
     m.v[1].y = cosX;
     m.v[1].z = sinX;
     m.v[2].y = -sinX;
@@ -411,6 +412,21 @@ M4 M4::Rotate(float x, float y, float z)
     *this *= m;
 
     return *this;
+}
+
+// fov as degree
+M4 M4::Perspective(float fov, float aspectRatio, float nearZ, float farZ)
+{
+    M4 m = { 0.0f };
+    float fovRad = (fov / 360.0f) * 2.0f * PI;
+
+    m.v[0].x = 1.0f / (aspectRatio * tan(fovRad * 0.5f));
+    m.v[1].y = 1.0f / tan(fovRad * 0.5f);
+    m.v[2].z = -farZ / (nearZ - farZ);
+    m.v[3].z = (nearZ * farZ) / (nearZ - farZ);
+    m.v[2].w = 1.0f;
+
+    return m;
 }
 
 

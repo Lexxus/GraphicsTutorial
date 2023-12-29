@@ -49,6 +49,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         float frameTime = float(endTime.QuadPart - beginTime.QuadPart) / float(timerFrequency.QuadPart);
         beginTime = endTime;
 
+        RECT clientRect = {};
+        Assert(GetClientRect(GlobalState.windowHandle, &clientRect));
+        u32 clientWidth = clientRect.right - clientRect.left;
+        u32 clientHeight = clientRect.bottom - clientRect.top;
+        float aspectRatio = float(clientWidth) / float(clientHeight);
+
         while (PeekMessageA(&msg, GlobalState.windowHandle, 0, 0, PM_REMOVE))
         {
             switch (msg.message)
@@ -97,11 +103,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                 Assert(GetCursorPos(&winMousePos));
                 Assert(ScreenToClient(GlobalState.windowHandle, &winMousePos));
 
-                RECT clientRect = {};
-                Assert(GetClientRect(GlobalState.windowHandle, &clientRect));
                 winMousePos.y = clientRect.bottom - winMousePos.y;
-                mousePos.x = float(winMousePos.x) / float(clientRect.right - clientRect.left);
-                mousePos.y = float(winMousePos.y) / float(clientRect.bottom - clientRect.top);
+                mousePos.x = float(winMousePos.x) / float(clientWidth);
+                mousePos.y = float(winMousePos.y) / float(clientHeight);
 
                 mouseDown = (GetKeyState(VK_LBUTTON) & 0x80) != 0;
             }
@@ -162,7 +166,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         };
 
         //float offset = abs(sinf(currAngle));
-        M4 transform = cameraTransform
+        M4 transform = M4::Perspective(60.0f, aspectRatio, 0.01f, 1000.0f)
+            * cameraTransform
             * M4(V3(0, 0, 2.0f))
             * M4::Identity().Rotate(currAngle, 0.0f, currAngle);
 
@@ -204,7 +209,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 #endif
 
-        fb.Render();
+        fb.Render(clientWidth, clientHeight);
 
         currAngle += frameTime;
         if (currAngle >= pi2)
