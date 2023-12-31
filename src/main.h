@@ -46,7 +46,7 @@ struct global_state
     HWND windowHandle;
     HDC deviceContext;
 };
-constexpr float PI = 3.14159265359f;
+constexpr float PI = 3.141592653589793f;
 
 #define WIN32_GRAPHICS_H
 #endif

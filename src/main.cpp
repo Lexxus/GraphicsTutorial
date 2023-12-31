@@ -40,6 +40,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     float currAngle = 0.0f;
     const float pi2 = PI * 2.0f;
+    Texture checkBoardTexture(32, 32);
+
+    for (u32 y = 0; y < checkBoardTexture.height(); ++y)
+        for (u32 x = 0; x < checkBoardTexture.width(); ++x)
+        {
+            u32 texColor = (x + (y % 2)) % 2 == 0 ? 0xFF000000 : 0xFFFFFFFF;
+            checkBoardTexture.setTexel(x, y, texColor);
+        }
 
     MSG msg = {};
 
@@ -131,17 +139,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             V3(0.5f, 0.5f, 0.5f),
             V3(0.5f, -0.5f, 0.5f),
         };
-        V3 modelColors[] =
+        V2 modelUvs[] =
         {
-            V3(1, 0, 0),
-            V3(1, 1, 0),
-            V3(1, 1, 0),
-            V3(0, 1, 0),
+            V2(0, 0),
+            V2(1, 0),
+            V2(1, 1),
+            V2(0, 1),
 
-            V3(0, 0, 1),
-            V3(0, 1, 1),
-            V3(0, 1, 1),
-            V3(1, 0, 1),
+            V2(0, 0),
+            V2(1, 0),
+            V2(1, 1),
+            V2(0, 1),
         };
         u32 modelIndices[] =
         {
@@ -177,7 +185,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             u32 index1 = modelIndices[i + 1];
             u32 index2 = modelIndices[i + 2];
             fb.DrawTriangle(modelVertices[index0], modelVertices[index1], modelVertices[index2],
-                modelColors[index0], modelColors[index1], modelColors[index2], transform);
+                modelUvs[index0], modelUvs[index1], modelUvs[index2], transform, checkBoardTexture);
         }
 
 #if 0

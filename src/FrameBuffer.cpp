@@ -78,7 +78,7 @@ float FrameBuffer::GetDepth(u32 x, u32 y)
 }
 
 void FrameBuffer::DrawTriangle(V3 &vertex0, V3 &vertex1, V3 &vertex2,
-    V3 &color0, V3 &color1, V3 &color2, M4 &transform)
+    V2 &modelUv0, V2 &modelUv1, V2 &modelUv2, M4 &transform, Texture &texture)
 {
     V4 transformedPoint0 = (transform * V4(vertex0));
     V4 transformedPoint1 = (transform * V4(vertex1));
@@ -143,9 +143,19 @@ void FrameBuffer::DrawTriangle(V3 &vertex0, V3 &vertex1, V3 &vertex2,
 
                 if (depth >= 0.0f && depth <= 1.0f && depth < mDepthBuffer[i])
                 {
+                    float oneOverW = t0 * (1.0f / transformedPoint0.w) + t1 * (1.0f / transformedPoint1.w) + t2 * (1.0f / transformedPoint2.w);
                     // get interpolated color based on the colors at the triangle's corners
-                    V3 color3d = (t0 * color0 + t1 * color1 + t2 * color2) * 255.0f;
-                    u32 color = alpha | ((u32)color3d.r << 16) | ((u32)color3d.g << 8) | (u32)color3d.b;
+                    V2 uv = t0 * (modelUv0 / transformedPoint0.w) + t1 * (modelUv1 / transformedPoint1.w) + t2 * (modelUv2 / transformedPoint2.w);
+                    // Z interpolation
+                    uv /= oneOverW;
+                    int texelX = (int)floorf(uv.x * (texture.width() - 1));
+                    int texelY = (int)floorf(uv.y * (texture.height() - 1));
+                    u32 color = 0xFF00FF00;
+
+                    if (texelX < texture.width() && texelY < texture.height())
+                    {
+                        color = texture.getTexel(texelX, texelY);
+                    }
 
                     mBuffer[i] = color;
                     mDepthBuffer[i] = depth;

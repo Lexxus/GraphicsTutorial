@@ -7,7 +7,6 @@ public:
     V2() :x{ 0 }, y{ 0 } {}
     V2(float x, float y) :x{ x }, y{ y } {}
     V2(float a) :x{ a }, y{ a } {}
-    V2(unsigned int x, unsigned int y) :x{ (float)x }, y{ (float)y } {}
 
     V2 operator=(V2);
     V2 operator+(V2);
@@ -20,6 +19,8 @@ public:
     V2 operator-=(float);
     V2 operator*(V2);
     V2 operator*=(V2);
+    V2 operator/(V2);
+    V2 operator/=(V2);
     V2 operator*(float);
     V2 operator*=(float);
     V2 operator/(float);

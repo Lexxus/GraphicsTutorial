@@ -100,6 +100,23 @@ V2 V2::operator*=(V2 a)
     return *this;
 }
 
+V2 V2::operator/(V2 a)
+{
+    V2 result(x, y);
+
+    result /= a;
+
+    return result;
+}
+
+V2 V2::operator/=(V2 a)
+{
+    x /= a.x;
+    y /= a.y;
+
+    return *this;
+}
+
 V2 V2::operator*(float n)
 {
     V2 result(x, y);
